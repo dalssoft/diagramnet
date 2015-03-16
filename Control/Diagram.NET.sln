@@ -1,0 +1,46 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diagram.NET", "Diagram.NET.csproj", "{46FE3660-273C-474B-BA51-835F5CDEDA58}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestForm", "..\TestForm\TestForm.csproj", "{0468C95B-C0D7-415E-9D73-64E11AD97738}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccProjectName0 = $
+		SccLocalPath0 = ..
+		SccProvider0 = MSSCCI:Workspaces
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection0 = Control\\
+		SolutionUniqueID = {76142992-1E90-478E-9A3C-2E2887560809}
+		SccProjectUniqueName1 = Diagram.NET.csproj
+		SccLocalPath1 = ..
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection1 = Control\\
+		SccProjectUniqueName2 = ..\\TestForm\\TestForm.csproj
+		SccLocalPath2 = ..
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection2 = TestForm\\
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{46FE3660-273C-474B-BA51-835F5CDEDA58}.Debug.ActiveCfg = Debug|.NET
+		{46FE3660-273C-474B-BA51-835F5CDEDA58}.Debug.Build.0 = Debug|.NET
+		{46FE3660-273C-474B-BA51-835F5CDEDA58}.Release.ActiveCfg = Release|.NET
+		{46FE3660-273C-474B-BA51-835F5CDEDA58}.Release.Build.0 = Release|.NET
+		{0468C95B-C0D7-415E-9D73-64E11AD97738}.Debug.ActiveCfg = Debug|.NET
+		{0468C95B-C0D7-415E-9D73-64E11AD97738}.Debug.Build.0 = Debug|.NET
+		{0468C95B-C0D7-415E-9D73-64E11AD97738}.Release.ActiveCfg = Release|.NET
+		{0468C95B-C0D7-415E-9D73-64E11AD97738}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
