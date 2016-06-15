@@ -153,7 +153,7 @@ namespace Dalssoft.TestForm
             // About
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
-            this.ClientSize = new System.Drawing.Size(385, 253);
+            this.ClientSize = new System.Drawing.Size(392, 250);
             this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label3);

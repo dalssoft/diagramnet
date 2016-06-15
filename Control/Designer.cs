@@ -104,15 +104,12 @@ namespace Dalssoft.DiagramNet
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.SuspendLayout();
-            // 
-            // Designer
-            // 
-            this.AutoScroll = true;
-            this.BackColor = System.Drawing.SystemColors.Window;
-            this.Name = "Designer";
-            this.Size = new System.Drawing.Size(392, 316);
-            this.ResumeLayout(false);
+			// 
+			// Designer
+			// 
+			this.AutoScroll = true;
+			this.BackColor = System.Drawing.SystemColors.Window;
+			this.Name = "Designer";
 
 		}
 		#endregion
