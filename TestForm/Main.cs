@@ -96,7 +96,8 @@ namespace Dalssoft.TestForm
 		private System.Windows.Forms.MenuItem menuItem1;
 		private Dalssoft.DiagramNet.Designer designer1;
 		private System.Windows.Forms.MenuItem TbCommentBox;
-		private System.ComponentModel.IContainer components;
+        private MenuItem menuSaveas;
+        private System.ComponentModel.IContainer components;
 
 		public Form1()
 		{
@@ -215,6 +216,7 @@ namespace Dalssoft.TestForm
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.menuSaveas = new System.Windows.Forms.MenuItem();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -544,6 +546,7 @@ namespace Dalssoft.TestForm
             this.mnuFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.mnuOpen,
             this.mnuSave,
+            this.menuSaveas,
             this.menuItem26,
             this.mnuExit});
             this.mnuFile.Text = "&File";
@@ -562,12 +565,12 @@ namespace Dalssoft.TestForm
             // 
             // menuItem26
             // 
-            this.menuItem26.Index = 2;
+            this.menuItem26.Index = 3;
             this.menuItem26.Text = "-";
             // 
             // mnuExit
             // 
-            this.mnuExit.Index = 3;
+            this.mnuExit.Index = 4;
             this.mnuExit.Text = "&Exit";
             this.mnuExit.Click += new System.EventHandler(this.mnuExit_Click);
             // 
@@ -828,6 +831,12 @@ namespace Dalssoft.TestForm
             this.openFileDialog1.DefaultExt = "*.dgn";
             this.openFileDialog1.RestoreDirectory = true;
             // 
+            // menuSaveas
+            // 
+            this.menuSaveas.Index = 2;
+            this.menuSaveas.Text = "Save &as ";
+            this.menuSaveas.Click += new System.EventHandler(this.menuSaveas_Click);
+            // 
             // Form1
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
@@ -1003,6 +1012,20 @@ namespace Dalssoft.TestForm
 
 		private void File_Save()
 		{
+            if (File.Exists(FileName))
+            {
+                designer1.Save(FileName);
+                Bitmap bmp = new Bitmap(designer1.Width, designer1.Height);
+                designer1.DrawToBitmap(bmp, new Rectangle(0, 0, designer1.Width, designer1.Height));
+                bmp.Save(FileName + ".png", System.Drawing.Imaging.ImageFormat.Png);
+            }
+            else
+            {
+                File_SaveAs();
+            }
+		}
+        private void File_SaveAs()
+        {
             saveFileDialog1.FileName = FileName;
             saveFileDialog1.Filter = "全部dgn文件(*.dgn)|*.dgn|全部文件(*.*)|*.*";
             saveFileDialog1.DefaultExt = ".dgn";
@@ -1013,10 +1036,10 @@ namespace Dalssoft.TestForm
                 Bitmap bmp = new Bitmap(designer1.Width, designer1.Height);
                 designer1.DrawToBitmap(bmp, new Rectangle(0, 0, designer1.Width, designer1.Height));
                 bmp.Save(saveFileDialog1.FileName + ".png", System.Drawing.Imaging.ImageFormat.Png);
-			}			
-		}
+            }
+        }
 
-		private void Order_BringToFront()
+        private void Order_BringToFront()
 		{
 			if (designer1.Document.SelectedElements.Count == 1)
 			{
@@ -1397,5 +1420,9 @@ namespace Dalssoft.TestForm
 				txtLog.AppendText(String.Format(log, args) + "\r\n");
 		}
 
-	}
+        private void menuSaveas_Click(object sender, EventArgs e)
+        {
+            File_SaveAs();
+        }
+    }
 }

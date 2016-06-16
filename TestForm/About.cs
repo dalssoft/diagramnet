@@ -20,7 +20,8 @@ namespace Dalssoft.TestForm
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.LinkLabel linkLabel2;
-		private System.ComponentModel.IContainer components;
+        private LinkLabel linkLabel3;
+        private System.ComponentModel.IContainer components;
 
 		public About()
 		{
@@ -67,6 +68,7 @@ namespace Dalssoft.TestForm
             this.label3 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.linkLabel2 = new System.Windows.Forms.LinkLabel();
+            this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -84,7 +86,7 @@ namespace Dalssoft.TestForm
             // 
             // linkLabel1
             // 
-            this.linkLabel1.Location = new System.Drawing.Point(19, 78);
+            this.linkLabel1.Location = new System.Drawing.Point(19, 76);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(211, 17);
             this.linkLabel1.TabIndex = 1;
@@ -112,7 +114,7 @@ namespace Dalssoft.TestForm
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(278, 215);
+            this.button1.Location = new System.Drawing.Point(271, 251);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 26);
             this.button1.TabIndex = 5;
@@ -131,7 +133,7 @@ namespace Dalssoft.TestForm
             // textBox1
             // 
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox1.Location = new System.Drawing.Point(19, 129);
+            this.textBox1.Location = new System.Drawing.Point(12, 165);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
@@ -142,7 +144,7 @@ namespace Dalssoft.TestForm
             // 
             // linkLabel2
             // 
-            this.linkLabel2.Location = new System.Drawing.Point(19, 95);
+            this.linkLabel2.Location = new System.Drawing.Point(19, 93);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(211, 17);
             this.linkLabel2.TabIndex = 8;
@@ -150,10 +152,21 @@ namespace Dalssoft.TestForm
             this.linkLabel2.Text = "Diagram.NET GotDotNet Website";
             this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel2_LinkClicked);
             // 
+            // linkLabel3
+            // 
+            this.linkLabel3.Location = new System.Drawing.Point(20, 119);
+            this.linkLabel3.Name = "linkLabel3";
+            this.linkLabel3.Size = new System.Drawing.Size(267, 22);
+            this.linkLabel3.TabIndex = 9;
+            this.linkLabel3.TabStop = true;
+            this.linkLabel3.Text = "https://github.com/dalssoft/diagramnet";
+            this.linkLabel3.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel3_LinkClicked);
+            // 
             // About
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
-            this.ClientSize = new System.Drawing.Size(392, 250);
+            this.ClientSize = new System.Drawing.Size(392, 283);
+            this.Controls.Add(this.linkLabel3);
             this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label3);
@@ -252,7 +265,21 @@ namespace Dalssoft.TestForm
 			VisitLinkGotDotNet();
 		}
 
-
-
-	}
+        private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                // Change the color of the link text by setting LinkVisited 
+                // to true.
+                linkLabel1.LinkVisited = true;
+                //Call the Process.Start method to open the default browser 
+                //with a URL:
+                System.Diagnostics.Process.Start(linkLabel3.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Unable to open link that was clicked.");
+            }
+        }
+    }
 }
