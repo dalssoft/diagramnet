@@ -987,20 +987,29 @@ namespace Dalssoft.TestForm
 		{
 			designer1.Document.Zoom = zoom;
 		}
-
-		private void File_Open()
+        public string  FileName { get; set; }
+        private void File_Open()
 		{
-			if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
+            openFileDialog1.FileName = FileName;
+            openFileDialog1.Filter = "全部dgn文件(*.dgn)|*.dgn|全部文件(*.*)|*.*";
+            openFileDialog1.DefaultExt = ".dgn";
+            if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
 			{
-				designer1.Open(openFileDialog1.FileName);
+                FileName = openFileDialog1.FileName;
+
+                designer1.Open(openFileDialog1.FileName);
 			}
 		}
 
 		private void File_Save()
 		{
+            saveFileDialog1.FileName = FileName;
+            saveFileDialog1.Filter = "全部dgn文件(*.dgn)|*.dgn|全部文件(*.*)|*.*";
+            saveFileDialog1.DefaultExt = ".dgn";
             if (saveFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                designer1.Save(saveFileDialog1.FileName+".xml");
+                FileName = saveFileDialog1.FileName;
+                designer1.Save(saveFileDialog1.FileName);
                 Bitmap bmp = new Bitmap(designer1.Width, designer1.Height);
                 designer1.DrawToBitmap(bmp, new Rectangle(0, 0, designer1.Width, designer1.Height));
                 bmp.Save(saveFileDialog1.FileName + ".png", System.Drawing.Imaging.ImageFormat.Png);
