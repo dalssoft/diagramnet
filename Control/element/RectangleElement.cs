@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -133,16 +134,29 @@ namespace Dalssoft.DiagramNet
 			g.DrawRectangle(p, r);
 			p.Dispose();
 		}
-
-		internal override void Draw(Graphics g)
+        Image __Backupgroup = null;
+        [DefaultValue(null)]
+        public Image Backupgroup
+        {
+            get { return __Backupgroup; }
+            set
+            {
+                __Backupgroup = value;
+                OnAppearanceChanged(new EventArgs());
+            }
+        }
+        internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
 
 			Rectangle r = GetUnsignedRectangle();
-			Brush b = GetBrush(r);			
+            Brush b = GetBrush(r);			
 			g.FillRectangle(b, r);
-
-			DrawBorder(g, r);
+            if (Backupgroup != null)
+            {
+                g.DrawImage(Backupgroup, r.X, r.Y,r.Width ,r.Height);
+            }
+            DrawBorder(g, r);
 			b.Dispose();
 		}
 		

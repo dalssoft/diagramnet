@@ -92,7 +92,7 @@ namespace Dalssoft.DiagramNet
 				base.Visible = value;
 			}
 		}
-
+     
 		public override Point Location
 		{
 			get
@@ -131,8 +131,19 @@ namespace Dalssoft.DiagramNet
 				base.BorderWidth = value;
 			}
 		}
-
-		public virtual LabelElement Label 
+        Image __Backupgroup = null;
+        [DefaultValue(null)]
+        public Image Backupgroup
+        {
+            get { return __Backupgroup; }
+            set
+            {
+                rectangle.Backupgroup = value;
+                __Backupgroup = value;
+              
+            }
+        }
+        public virtual LabelElement Label 
 		{
 			get
 			{
@@ -153,7 +164,7 @@ namespace Dalssoft.DiagramNet
 			base.borderWidth = rectangle.BorderWidth;
 			base.opacity = rectangle.Opacity;
 			base.visible = rectangle.Visible;
-		}
+        }
 
 		internal override void Draw(Graphics g)
 		{

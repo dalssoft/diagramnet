@@ -131,8 +131,19 @@ namespace Dalssoft.DiagramNet
 				base.BorderWidth = value;
 			}
 		}
+        Image __Backupgroup = null;
+        [DefaultValue(null)]
+        public Image Backupgroup
+        {
+            get { return __Backupgroup; }
+            set
+            {
+                elipse.Backupgroup = value;
+                __Backupgroup = value;
 
-		public virtual LabelElement Label 
+            }
+        }
+        public virtual LabelElement Label 
 		{
 			get
 			{

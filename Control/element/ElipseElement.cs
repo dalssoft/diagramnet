@@ -19,8 +19,8 @@ namespace Dalssoft.DiagramNet
 		public ElipseElement(Point l, Size s): base(l, s) {}
 
 		public ElipseElement(int top, int left, int width, int height): base(top, left, width, height) {}
-
-		internal override void Draw(Graphics g)
+     
+        internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
 
@@ -57,9 +57,12 @@ namespace Dalssoft.DiagramNet
 			}
 
 			g.FillEllipse(b, r);
-
-			//Border
-			Pen p;
+            if (Backupgroup != null)
+            {
+                g.DrawImage(Backupgroup, r.X, r.Y, r.Width, r.Height);
+            }
+            //Border
+            Pen p;
 			p = new Pen(borderColor, borderWidth);
 			g.DrawEllipse(p, r);
 			

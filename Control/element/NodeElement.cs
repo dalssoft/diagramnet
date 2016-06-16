@@ -61,8 +61,8 @@ namespace Dalssoft.DiagramNet
 				OnAppearanceChanged(new EventArgs());
 			}
 		}
-
-		public override bool Visible
+    
+        public override bool Visible
 		{
 			get
 			{
