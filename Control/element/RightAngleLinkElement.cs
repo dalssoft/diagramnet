@@ -34,6 +34,7 @@ namespace Dalssoft.DiagramNet
 			endCap = LineCap.Round;
 
 			label.PositionBySite(lines[1]);
+
 		}
 
 		#region Properties
@@ -324,7 +325,8 @@ namespace Dalssoft.DiagramNet
 			needCalcLinkSize = true;
 
 			needCalcLink = false;
-		}
+           
+        }
 
 		private void CalcLinkLocation()
 		{
@@ -343,8 +345,8 @@ namespace Dalssoft.DiagramNet
 			}
 
 			location = DiagramUtil.GetUpperPoint(points);
-
-			needCalcLinkLocation = false;
+            label.PositionBySite(lines[1]);
+            needCalcLinkLocation = false;
 		}
 
 		private void CalcLinkSize()

@@ -31,8 +31,8 @@ namespace Dalssoft.DiagramNet
 			location  = new Point(top, left);
 			size = new Size(width, height);
 		}
-
-		public virtual Point Location
+        public string  Name { get; set; }
+        public virtual Point Location
 		{
 			get
 			{

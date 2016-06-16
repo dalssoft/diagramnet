@@ -39,7 +39,9 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
-				base.Location = value;
+
+                label.Location = value;
+                base.Location = value;
 			}
 		}
 

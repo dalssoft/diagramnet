@@ -101,6 +101,7 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
+                label.Location = value;
 				elipse.Location = value;
 				base.Location = value;
 			}

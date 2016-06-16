@@ -101,9 +101,11 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
+                label.Location = value;
 				rectangle.Location = value;
 				base.Location = value;
-			}
+                OnAppearanceChanged(new EventArgs());
+            }
 		}
 
 		public override Size Size

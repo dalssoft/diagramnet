@@ -342,8 +342,83 @@ namespace Dalssoft.DiagramNet
 			}
 			return null;
 		}
+        public BaseElement FindElement(string name)
+        {
+            BaseElement el;
+            if ((elements != null) && (elements.Count > 0))
+            {
+                // First, find elements
+                for (int i = elements.Count - 1; i >= 0; i--)
+                {
+                    el = elements[i];
 
-		private BaseElement FindInnerElement(IContainer parent, Point hitPos)
+                    if (el is BaseLinkElement)
+                        continue;
+
+                    //Find element in a Connector array
+                    if (el is NodeElement)
+                    {
+                        NodeElement nel = (NodeElement)el;
+                        foreach (ConnectorElement cel in nel.Connectors)
+                        {
+                           if (cel.Name ==name )
+                            {
+                                return cel;
+                            }
+                        }
+                    }
+
+                    //Find element in a Container Element
+                    if (el is IContainer)
+                    {
+                        BaseElement inner = FindInnerElement((IContainer)el, name );
+                        if (inner != null)
+                            return inner;
+                    }
+
+                 
+                }
+
+                // Then, find links
+                for (int i = elements.Count - 1; i >= 0; i--)
+                {
+                    el = elements[i];
+
+                    if (!(el is BaseLinkElement))
+                        continue;
+
+                    if (el.Name==name )
+                    {
+                        return el;
+                    }
+                }
+            }
+            return null;
+        }
+        private BaseElement FindInnerElement(IContainer parent, string name)
+        {
+            foreach (BaseElement el in parent.Elements)
+            {
+                if (el is IContainer)
+                {
+                    BaseElement retEl = FindInnerElement((IContainer)el, name);
+                    if (retEl != null)
+                        return retEl;
+                }
+
+                if (el is IControllable)
+                {
+                    IController ctrl = ((IControllable)el).GetController();
+
+                   if (el.Name ==name )
+                    {
+                        return el;
+                    }
+                }
+            }
+            return null;
+        }
+        private BaseElement FindInnerElement(IContainer parent, Point hitPos)
 		{
 			foreach (BaseElement el in parent.Elements)
 			{
