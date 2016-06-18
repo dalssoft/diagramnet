@@ -132,15 +132,15 @@ namespace Dalssoft.DiagramNet
 				base.BorderWidth = value;
 			}
 		}
-        Image __Backupgroup = null;
+        Image __Background = null;
         [DefaultValue(null)]
-        public Image Backupgroup
+        public Image Background
         {
-            get { return __Backupgroup; }
+            get { return __Background; }
             set
             {
                 elipse.Background = value;
-                __Backupgroup = value;
+                __Background = value;
 
             }
         }
