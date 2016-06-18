@@ -139,7 +139,7 @@ namespace Dalssoft.DiagramNet
             get { return __Backupgroup; }
             set
             {
-                elipse.Backupgroup = value;
+                elipse.Background = value;
                 __Backupgroup = value;
 
             }

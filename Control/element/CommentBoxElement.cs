@@ -60,8 +60,11 @@ namespace Dalssoft.DiagramNet
 			IsInvalidated = false;
 
 			Rectangle r = BaseElement.GetUnsignedRectangle(new Rectangle(location, size));
-
-			Point[] points = new Point[5];
+            if (Background != null)
+            {
+               g.DrawImage(Background, r.X, r.Y, r.Width, r.Height);
+            }
+            Point[] points = new Point[5];
 			points[0] = new Point(r.X + 0, r.Y + 0);
 			points[1] = new Point(r.X + 0, r.Y + r.Height);
 			points[2] = new Point(r.X + r.Width, r.Y + r.Height);

@@ -57,9 +57,9 @@ namespace Dalssoft.DiagramNet
 			}
 
 			g.FillEllipse(b, r);
-            if (Backupgroup != null)
+            if (Background != null)
             {
-                g.DrawImage(Backupgroup, r.X, r.Y, r.Width, r.Height);
+                g.DrawImage(Background, r.X, r.Y, r.Width, r.Height);
             }
             //Border
             Pen p;

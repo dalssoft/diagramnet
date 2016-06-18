@@ -359,6 +359,10 @@ namespace Dalssoft.DiagramNet
                     if (el is NodeElement)
                     {
                         NodeElement nel = (NodeElement)el;
+                        if (el.Name ==name)
+                        {
+                            return el;
+                        }
                         foreach (ConnectorElement cel in nel.Connectors)
                         {
                            if (cel.Name ==name )

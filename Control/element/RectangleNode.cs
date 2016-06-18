@@ -140,7 +140,7 @@ namespace Dalssoft.DiagramNet
             get { return __Backupgroup; }
             set
             {
-                rectangle.Backupgroup = value;
+                rectangle.Background = value;
                 __Backupgroup = value;
               
             }
