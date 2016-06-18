@@ -1044,7 +1044,10 @@ namespace Dalssoft.DiagramNet
 				case ElementType.CommentBox:
 					el = new CommentBoxElement(selectionRectangle);
 					break;
-				default:
+                case ElementType.CommentBoxNode:
+                    el = new CommentBoxNode(selectionRectangle);
+                    break;
+                default:
 					el = new RectangleNode(selectionRectangle);
 					break;
 			}

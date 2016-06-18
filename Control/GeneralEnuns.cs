@@ -38,8 +38,10 @@ namespace Dalssoft.DiagramNet
 		RectangleNode,
 		Elipse,
 		ElipseNode,
-		CommentBox
-	}
+		CommentBox,
+        CommentBoxNode
+
+    }
 
 	public enum LinkType
 	{

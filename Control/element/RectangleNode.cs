@@ -135,7 +135,7 @@ namespace Dalssoft.DiagramNet
 		}
         Image __Backupgroup = null;
         [DefaultValue(null)]
-        public Image Backupgroup
+        public Image Backgroup
         {
             get { return __Backupgroup; }
             set

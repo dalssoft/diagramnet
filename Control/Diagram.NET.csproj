@@ -114,6 +114,7 @@
     <Compile Include="element\BaseLinkElement.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="element\CommentBoxNode.cs" />
     <Compile Include="element\CommentBoxElement.cs">
       <SubType>Code</SubType>
     </Compile>
