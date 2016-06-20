@@ -101,6 +101,7 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
+                label.Location = value;
 				elipse.Location = value;
 				base.Location = value;
 			}
@@ -131,15 +132,15 @@ namespace Dalssoft.DiagramNet
 				base.BorderWidth = value;
 			}
 		}
-        Image __Backupgroup = null;
+        Image __Background = null;
         [DefaultValue(null)]
-        public Image Backupgroup
+        public Image Background
         {
-            get { return __Backupgroup; }
+            get { return __Background; }
             set
             {
-                elipse.Backupgroup = value;
-                __Backupgroup = value;
+                elipse.Background = value;
+                __Background = value;
 
             }
         }

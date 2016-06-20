@@ -11,793 +11,815 @@ using System.ComponentModel;
 
 namespace Dalssoft.DiagramNet
 {
-	public class Designer : System.Windows.Forms.UserControl
-	{
-		private System.ComponentModel.IContainer components;
-
-		#region Designer Control Initialization
-		//Document
-		private Document document = new Document();
-
-		// Drag and Drop
-		MoveAction moveAction = null;
-
-		// Selection
-		BaseElement selectedElement;
-		private bool isMultiSelection = false;
-		private RectangleElement selectionArea = new RectangleElement(0,0,0,0);
-		private IController[] controllers;
-		private BaseElement mousePointerElement;
-	
-		// Resize
-		private ResizeAction resizeAction = null;
-
-		// Add Element
-		private bool isAddSelection = false;
-		
-		// Link
-		private bool isAddLink = false;
-		private ConnectorElement connStart;
-		private ConnectorElement connEnd;
-		private BaseLinkElement linkLine;
-
-		// Label
-		private bool isEditLabel = false;
-		private LabelElement selectedLabel;
-		private System.Windows.Forms.TextBox labelTextBox = new TextBox();
-		private EditLabelAction editLabelAction = null;
-
-		//Undo
-		[NonSerialized]
-		private UndoManager undo = new UndoManager(5);
-		private bool changed = false;
-
-		public Designer()
-		{
-			// This call is required by the Windows.Forms Form Designer.
-			InitializeComponent();
-
-			// This change control to not flick
-			this.SetStyle(ControlStyles.UserPaint, true);
-			this.SetStyle(ControlStyles.ResizeRedraw, true);
-			this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-			this.SetStyle(ControlStyles.DoubleBuffer, true);
-			
-			// Selection Area Properties
-			selectionArea.Opacity = 40;
-			selectionArea.FillColor1 = SystemColors.Control;
-			selectionArea.FillColor2 = Color.Empty;
-			selectionArea.BorderColor = SystemColors.Control;
-
-			// Link Line Properties
-			//linkLine.BorderColor = Color.FromArgb(127, Color.DarkGray);
-			//linkLine.BorderWidth = 4;
-
-			// Label Edit
-			labelTextBox.BorderStyle = BorderStyle.FixedSingle;
-			labelTextBox.Multiline = true;
-			labelTextBox.Hide();
-			this.Controls.Add(labelTextBox);
-
-			//EventsHandlers
-			RecreateEventsHandlers();
-		}
-		#endregion
-
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if( components != null )
-					components.Dispose();
-			}
-			base.Dispose( disposing );
-		}
-
-		#region Component Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-			// 
-			// Designer
-			// 
-			this.AutoScroll = true;
-			this.BackColor = System.Drawing.SystemColors.Window;
-			this.Name = "Designer";
-
-		}
-		#endregion
-
-		public new void Invalidate()
-		{
-			if (document.Elements.Count > 0)
-			{
-				for (int i = 0; i <= document.Elements.Count - 1; i++)
-				{
-					BaseElement el = document.Elements[i];
-
-					Invalidate(el);
-
-					if (el is ILabelElement)
-						Invalidate(((ILabelElement) el).Label);
-				}
-			}
-			else
-				base.Invalidate();
-
-			if ((moveAction != null) && (moveAction.IsMoving))
-				this.AutoScrollMinSize = new Size((int) ((document.Location.X + document.Size.Width) * document.Zoom), (int) ((document.Location.Y + document.Size.Height) * document.Zoom));
-
-		}
-
-		private void Invalidate(BaseElement el)
-		{
-			this.Invalidate(el, false);
-		}
-
-		private void Invalidate(BaseElement el, bool force)
-		{
-			if (el == null) return;
-
-			if ((force) || (el.IsInvalidated))
-			{
-				Rectangle invalidateRec = Goc2Gsc(el.invalidateRec);
-				invalidateRec.Inflate(10, 10);
-				base.Invalidate(invalidateRec);
-			}			
-		}
-
-		#region Events Overrides
-		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
-		{
-			Graphics g = e.Graphics;
-			GraphicsContainer gc;
-			Matrix mtx;
-			g.PageUnit = GraphicsUnit.Pixel;
-
-			Point scrollPoint = this.AutoScrollPosition;
-			g.TranslateTransform(scrollPoint.X, scrollPoint.Y);
-
-			//Zoom
-			mtx = g.Transform;
-			gc = g.BeginContainer();
-			
-			g.SmoothingMode = document.SmoothingMode;
-			g.PixelOffsetMode = document.PixelOffsetMode;
-			g.CompositingQuality = document.CompositingQuality;
-			
-			g.ScaleTransform(document.Zoom, document.Zoom);
-
-			Rectangle clipRectangle = Gsc2Goc(e.ClipRectangle);
-
-			document.DrawElements(g, clipRectangle);
-
-			if (!((resizeAction != null) && (resizeAction.IsResizing)))
-				document.DrawSelections(g, e.ClipRectangle);
-
-			if ((isMultiSelection) || (isAddSelection))
-				DrawSelectionRectangle(g);
- 
-			if (isAddLink)
-			{
-				linkLine.CalcLink();
-				linkLine.Draw(g);
-			}
-			if ((resizeAction != null) && ( !((moveAction != null) && (moveAction.IsMoving))))
-				resizeAction.DrawResizeCorner(g);
-
-			if (mousePointerElement != null)
-			{
-				if (mousePointerElement is IControllable)
-				{
-					IController ctrl = ((IControllable) mousePointerElement).GetController();
-					ctrl.DrawSelection(g);
-				}
-			}
-
-			g.EndContainer(gc);
-			g.Transform = mtx;
-
-			base.OnPaint(e);
-
-		}
-
-		protected override void OnPaintBackground(PaintEventArgs e)
-		{
-			base.OnPaintBackground (e);
-
-			Graphics g = e.Graphics;
-			GraphicsContainer gc;
-			Matrix mtx;
-			g.PageUnit = GraphicsUnit.Pixel;
-			mtx = g.Transform;
-			gc = g.BeginContainer();
-			
-			Rectangle clipRectangle = Gsc2Goc(e.ClipRectangle);
-			
-			document.DrawGrid(g, clipRectangle);
-
-			g.EndContainer(gc);
-			g.Transform = mtx;
-
-		}
-
-
-		protected override void OnKeyDown(KeyEventArgs e)
-		{
-			//Delete element
-			if (e.KeyCode == Keys.Delete)
-			{
-				DeleteSelectedElements();
-				EndGeneralAction();
-				base.Invalidate();
-			}
-
-			//Undo
-			if (e.Control && e.KeyCode == Keys.Z)
-			{
-				if (undo.CanUndo)
-					Undo();
-			}
-
-			//Copy
-			if ((e.Control) && (e.KeyCode == Keys.C))
-			{
-				this.Copy();
-			}
-
-			//Paste
-			if ((e.Control) && (e.KeyCode == Keys.V))
-			{
-				this.Paste();
-			}
-
-			//Cut
-			if ((e.Control) && (e.KeyCode == Keys.X))
-			{
-				this.Cut();
-			}
-
-			base.OnKeyDown (e);
-		}
-
-		protected override void OnResize(EventArgs e)
-		{
-			base.OnResize (e);
-			document.WindowSize = this.Size;
-		}
-
-		#region Mouse Events
-		protected override void OnMouseDown(MouseEventArgs e)
-		{
-			Point mousePoint;
-
-			//ShowSelectionCorner((document.Action==DesignerAction.Select));
-
-			switch (document.Action)
-			{
-				// SELECT
-				case DesignerAction.Connect:
-				case DesignerAction.Select:
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						
-						//Verify resize action
-						StartResizeElement(mousePoint);
-						if ((resizeAction != null) && (resizeAction.IsResizing)) break;
-
-						//Verify label editing
-						if (isEditLabel)
-						{
-							EndEditLabel();
-						}
-
-						// Search element by click
-						selectedElement = document.FindElement(mousePoint);	
-						
-						if (selectedElement != null)
-						{
-							//Events
-							ElementMouseEventArgs eventMouseDownArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
-							OnElementMouseDown(eventMouseDownArg);
-
-							// Double-click to edit Label
-							if ((e.Clicks == 2) && (selectedElement is ILabelElement))
-							{
-								selectedLabel = ((ILabelElement) selectedElement).Label;
-								StartEditLabel();
-								break;
-							}
-
-							// Element selected
-							if (selectedElement is ConnectorElement)
-							{
-								StartAddLink((ConnectorElement) selectedElement, mousePoint);
-								selectedElement = null;
-							}
-							else
-								StartSelectElements(selectedElement, mousePoint);
-						}
-						else
-						{
-							// If click is on neutral area, clear selection
-							document.ClearSelection();
-							Point p = Gsc2Goc(new Point(e.X, e.Y));;
-							isMultiSelection = true;
-							selectionArea.Visible = true;
-							selectionArea.Location = p;
-							selectionArea.Size = new Size(0, 0);
-							
-							if (resizeAction != null)
-								resizeAction.ShowResizeCorner(false);
-						}
-						base.Invalidate();
-					}
-					break;
-
-				// ADD
-				case DesignerAction.Add:
-
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						StartAddElement(mousePoint);
-					}
-					break;
-
-				// DELETE
-				case DesignerAction.Delete:
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						DeleteElement(mousePoint);
-					}					
-					break;
-			}
-			
-			base.OnMouseDown (e);
-		
-		}
-
-		protected override void OnMouseMove(MouseEventArgs e)
-		{
-
-			if (e.Button == MouseButtons.None)
-			{
-				this.Cursor = Cursors.Arrow;
-				Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-
-				if ((resizeAction != null)
-					&& ((document.Action == DesignerAction.Select)				
-						|| ((document.Action == DesignerAction.Connect)
-							&& (resizeAction.IsResizingLink))))
-				{
-					this.Cursor = resizeAction.UpdateResizeCornerCursor(mousePoint);
-				}
-				
-				if (document.Action == DesignerAction.Connect)
-				{
-					BaseElement mousePointerElementTMP = document.FindElement(mousePoint);
-					if (mousePointerElement != mousePointerElementTMP)
-					{
-						if (mousePointerElementTMP is ConnectorElement)
-						{
-							mousePointerElement = mousePointerElementTMP;
-							mousePointerElement.Invalidate();
-							this.Invalidate(mousePointerElement, true);
-						}
-						else if (mousePointerElement != null)
-						{
-							mousePointerElement.Invalidate();
-							this.Invalidate(mousePointerElement, true);
-							mousePointerElement = null;
-						}
-						
-					}
-				}
-				else
-				{
-					this.Invalidate(mousePointerElement, true);
-					mousePointerElement = null;
-				}
-			}			
-
-			if (e.Button == MouseButtons.Left)
-			{
-				Point dragPoint = Gsc2Goc(new Point(e.X, e.Y));
-
-				if ((resizeAction != null) && (resizeAction.IsResizing))
-				{
-					resizeAction.Resize(dragPoint);
-					this.Invalidate();					
-				}
-
-				if ((moveAction != null) && (moveAction.IsMoving))
-				{
-					moveAction.Move(dragPoint);
-					this.Invalidate();
-				}
-				
-				if ((isMultiSelection) || (isAddSelection))
-				{
-					Point p = Gsc2Goc(new Point(e.X, e.Y));
-					selectionArea.Size = new Size (p.X - selectionArea.Location.X, p.Y - selectionArea.Location.Y);
-					selectionArea.Invalidate();
-					this.Invalidate(selectionArea, true);
-				}
-				
-				if (isAddLink)
-				{
-					selectedElement = document.FindElement(dragPoint);
-					if ((selectedElement is ConnectorElement) 
-						&& (document.CanAddLink(connStart, (ConnectorElement) selectedElement)))
-						linkLine.Connector2 = (ConnectorElement) selectedElement;
-					else
-						linkLine.Connector2 = connEnd;
-
-					IMoveController ctrl = (IMoveController) ((IControllable) connEnd).GetController();
-					ctrl.Move(dragPoint);
-					
-					//this.Invalidate(linkLine, true); //TODO
-					base.Invalidate();
-				}
-			}
-
-			base.OnMouseMove (e);
-		}
-
-		protected override void OnMouseUp(MouseEventArgs e)
-		{
-			Rectangle selectionRectangle = selectionArea.GetUnsignedRectangle();
-			
-			if ((moveAction != null) && (moveAction.IsMoving))
-			{
-				ElementEventArgs eventClickArg = new ElementEventArgs(selectedElement);
-				OnElementClick(eventClickArg);
-
-				moveAction.End();
-				moveAction = null;
-
-				ElementMouseEventArgs eventMouseUpArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
-				OnElementMouseUp(eventMouseUpArg);
-				
-				if (changed)
-					AddUndo();
-			}
-
-			// Select
-			if (isMultiSelection)
-			{
-				EndSelectElements(selectionRectangle);
-			}
-			// Add element
-			else if (isAddSelection)
-			{
-				EndAddElement(selectionRectangle);
-			}
-			
-			// Add link
-			else if (isAddLink)
-			{
-				Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-				EndAddLink();
-				
-				AddUndo();
-			}
-			
-			// Resize
-			if (resizeAction != null)
-			{
-				if (resizeAction.IsResizing)
-				{
-					Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-					resizeAction.End(mousePoint);
-				
-					AddUndo();
-				}
-				resizeAction.UpdateResizeCorner();
-			}
-
-			RestartInitValues();
-
-			base.Invalidate();
-
-			base.OnMouseUp (e);
-		}
-		#endregion
-
-		#endregion
-		
-		#region Events Raising
-		
-		// element handler
-		public delegate void ElementEventHandler(object sender, ElementEventArgs e);
-
-		#region Element Mouse Events
-		
-		// CLICK
-		[Category("Element")]
-		public event ElementEventHandler ElementClick;
-		
-		protected virtual void OnElementClick(ElementEventArgs e)
-		{
-			if (ElementClick != null)
-			{
-				ElementClick(this, e);
-			}
-		}
-
-		// mouse handler
-		public delegate void ElementMouseEventHandler(object sender, ElementMouseEventArgs e);
-
-		// MOUSE DOWN
-		[Category("Element")]
-		public event ElementMouseEventHandler ElementMouseDown;
-		
-		protected virtual void OnElementMouseDown(ElementMouseEventArgs e)
-		{
-			if (ElementMouseDown != null)
-			{
-				ElementMouseDown(this, e);
-			}
-		}
-
-		// MOUSE UP
-		[Category("Element")]
-		public event ElementMouseEventHandler ElementMouseUp;
-		
-		protected virtual void OnElementMouseUp(ElementMouseEventArgs e)
-		{
-			if (ElementMouseUp != null)
-			{
-				ElementMouseUp(this, e);
-			}
-		}
-
-		#endregion
-		 
-		#region Element Move Events
-		// Before Move
-		[Category("Element")]
-		public event ElementEventHandler ElementMoving;
-		
-		protected virtual void OnElementMoving(ElementEventArgs e)
-		{
-			if (ElementMoving != null)
-			{
-				ElementMoving(this, e);
-			}
-		}
-
-		// After Move
-		[Category("Element")]
-		public event ElementEventHandler ElementMoved;
-		
-		protected virtual void OnElementMoved(ElementEventArgs e)
-		{
-			if (ElementMoved != null)
-			{
-				ElementMoved(this, e);
-			}
-		}
-		#endregion
-
-		#region Element Resize Events
-		// Before Resize
-		[Category("Element")]
-		public event ElementEventHandler ElementResizing;
-		
-		protected virtual void OnElementResizing(ElementEventArgs e)
-		{
-			if (ElementResizing != null)
-			{
-				ElementResizing(this, e);
-			}
-		}
-
-		// After Resize
-		[Category("Element")]
-		public event ElementEventHandler ElementResized;
-		
-		protected virtual void OnElementResized(ElementEventArgs e)
-		{
-			if (ElementResized != null)
-			{
-				ElementResized(this, e);
-			}
-		}
-		#endregion
-
-		#region Element Connect Events
-		// connect handler
-		public delegate void ElementConnectEventHandler(object sender, ElementConnectEventArgs e);
-
-		// Before Connect
-		[Category("Element")]
-		public event ElementConnectEventHandler ElementConnecting;
-		
-		protected virtual void OnElementConnecting(ElementConnectEventArgs e)
-		{
-			if (ElementConnecting != null)
-			{
-				ElementConnecting(this, e);
-			}
-		}
-
-		// After Connect
-		[Category("Element")]
-		public event ElementConnectEventHandler ElementConnected;
-		
-		protected virtual void OnElementConnected(ElementConnectEventArgs e)
-		{
-			if (ElementConnected != null)
-			{
-				ElementConnected(this, e);
-			}
-		}
-		#endregion
-
-		#region Element Selection Events
-		// connect handler
-		public delegate void ElementSelectionEventHandler(object sender, ElementSelectionEventArgs e);
-
-		// Selection
-		[Category("Element")]
-		public event ElementSelectionEventHandler ElementSelection;
-		
-		protected virtual void OnElementSelection(ElementSelectionEventArgs e)
-		{
-			if (ElementSelection != null)
-			{
-				ElementSelection(this, e);
-			}
-		}
-
-		#endregion
-
-		#endregion
-
-		#region Events Handling
-		private void document_PropertyChanged(object sender, EventArgs e)
-		{
-			if (!IsChanging())
-			{
-				base.Invalidate();
-			}
-		}
-
-		private void document_AppearancePropertyChanged(object sender, EventArgs e)
-		{
-			if (!IsChanging())
-			{
-				AddUndo();
-				base.Invalidate();
-			}
-		}
-
-		private void document_ElementPropertyChanged(object sender, EventArgs e)
-		{
-			changed = true;
-
-			if (!IsChanging())
-			{
-				AddUndo();
-				base.Invalidate();
-			}
-		}
-
-		private void document_ElementSelection(object sender, ElementSelectionEventArgs e)
-		{
-			OnElementSelection(e);
-		}
-		#endregion
-
-		#region Properties
-
-		public Document Document
-		{
-			get
-			{
-				return document;
-			}
-		}
-
-		public bool CanUndo
-		{
-			get
-			{
-				return undo.CanUndo;
-			}
-		}
-
-		public bool CanRedo
-		{
-			get
-			{
-				return undo.CanRedo;
-			}
-		}
-
-
-		private bool IsChanging()
-		{
-			return (
-					((moveAction != null) && (moveAction.IsMoving)) //isDragging
-					|| isAddLink || isMultiSelection || 
-					((resizeAction != null) && (resizeAction.IsResizing)) //isResizing
-					);
-		}
-		#endregion
-		
-		#region Draw Methods
-
-		/// <summary>
-		/// Graphic surface coordinates to graphic object coordinates.
-		/// </summary>
-		/// <param name="p">Graphic surface point.</param>
-		/// <returns></returns>
-		public Point Gsc2Goc(Point gsp)
-		{
-			float zoom = document.Zoom;
-			gsp.X = (int) ((gsp.X - this.AutoScrollPosition.X) / zoom);
-			gsp.Y = (int) ((gsp.Y - this.AutoScrollPosition.Y) / zoom);
-			return gsp;
-		}
-
-		public Rectangle Gsc2Goc(Rectangle gsr)
-		{
-			float zoom = document.Zoom;
-			gsr.X = (int) ((gsr.X - this.AutoScrollPosition.X) / zoom);
-			gsr.Y = (int) ((gsr.Y - this.AutoScrollPosition.Y) / zoom);
-			gsr.Width = (int) (gsr.Width / zoom);
-			gsr.Height = (int) (gsr.Height / zoom);
-			return gsr;
-		}
-
-		public Rectangle Goc2Gsc(Rectangle gsr)
-		{
-			float zoom = document.Zoom;
-			gsr.X = (int) ((gsr.X + this.AutoScrollPosition.X) * zoom);
-			gsr.Y = (int) ((gsr.Y + this.AutoScrollPosition.Y) * zoom);
-			gsr.Width = (int) (gsr.Width * zoom);
-			gsr.Height = (int) (gsr.Height * zoom);
-			return gsr;
-		}
-
-		internal void DrawSelectionRectangle(Graphics g)
-		{
-			selectionArea.Draw(g);
-		}
-		#endregion
-
-		#region Open/Save File
-		public void Save(string fileName)
-		{
-			IFormatter formatter = new BinaryFormatter();
-			Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-			formatter.Serialize(stream, document);
-			stream.Close();
-		}
-
-		public void Open(string fileName)
-		{
-			IFormatter formatter = new BinaryFormatter();
+    public class Designer : System.Windows.Forms.UserControl
+    {
+        private System.ComponentModel.IContainer components;
+
+        #region Designer Control Initialization
+        //Document
+        private Document document = new Document();
+
+        // Drag and Drop
+        MoveAction moveAction = null;
+
+        // Selection
+        BaseElement selectedElement;
+        private bool isMultiSelection = false;
+        private RectangleElement selectionArea = new RectangleElement(0, 0, 0, 0);
+        private IController[] controllers;
+        private BaseElement mousePointerElement;
+
+        // Resize
+        private ResizeAction resizeAction = null;
+
+        // Add Element
+        private bool isAddSelection = false;
+
+        // Link
+        private bool isAddLink = false;
+        private ConnectorElement connStart;
+        private ConnectorElement connEnd;
+        private BaseLinkElement linkLine;
+
+        // Label
+        private bool isEditLabel = false;
+        private LabelElement selectedLabel;
+        private System.Windows.Forms.TextBox labelTextBox = new TextBox();
+        private EditLabelAction editLabelAction = null;
+
+        //Undo
+        [NonSerialized]
+        private UndoManager undo = new UndoManager(5);
+        private bool changed = false;
+
+        public Designer()
+        {
+            // This call is required by the Windows.Forms Form Designer.
+            InitializeComponent();
+
+            // This change control to not flick
+            this.SetStyle(ControlStyles.UserPaint, true);
+            this.SetStyle(ControlStyles.ResizeRedraw, true);
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            this.SetStyle(ControlStyles.DoubleBuffer, true);
+
+            // Selection Area Properties
+            selectionArea.Opacity = 40;
+            selectionArea.FillColor1 = SystemColors.Control;
+            selectionArea.FillColor2 = Color.Empty;
+            selectionArea.BorderColor = SystemColors.Control;
+
+            // Link Line Properties
+            //linkLine.BorderColor = Color.FromArgb(127, Color.DarkGray);
+            //linkLine.BorderWidth = 4;
+
+            // Label Edit
+            labelTextBox.BorderStyle = BorderStyle.FixedSingle;
+            labelTextBox.Multiline = true;
+            labelTextBox.Hide();
+            this.Controls.Add(labelTextBox);
+
+            //EventsHandlers
+            RecreateEventsHandlers();
+        }
+        #endregion
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                    components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Component Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            // 
+            // Designer
+            // 
+            this.AutoScroll = true;
+            this.BackColor = System.Drawing.SystemColors.Window;
+            this.Name = "Designer";
+
+        }
+        #endregion
+
+        public new void Invalidate()
+        {
+            if (document.Elements.Count > 0)
+            {
+                for (int i = 0; i <= document.Elements.Count - 1; i++)
+                {
+                    BaseElement el = document.Elements[i];
+
+                    Invalidate(el);
+
+                    if (el is ILabelElement)
+                        Invalidate(((ILabelElement)el).Label);
+                }
+            }
+            else
+                base.Invalidate();
+
+            if ((moveAction != null) && (moveAction.IsMoving))
+                this.AutoScrollMinSize = new Size((int)((document.Location.X + document.Size.Width) * document.Zoom), (int)((document.Location.Y + document.Size.Height) * document.Zoom));
+
+        }
+
+        private void Invalidate(BaseElement el)
+        {
+            this.Invalidate(el, false);
+        }
+
+        private void Invalidate(BaseElement el, bool force)
+        {
+            if (el == null) return;
+
+            if ((force) || (el.IsInvalidated))
+            {
+                Rectangle invalidateRec = Goc2Gsc(el.invalidateRec);
+                invalidateRec.Inflate(10, 10);
+                base.Invalidate(invalidateRec);
+            }
+        }
+
+        #region Events Overrides
+        protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            GraphicsContainer gc;
+            Matrix mtx;
+            g.PageUnit = GraphicsUnit.Pixel;
+
+            Point scrollPoint = this.AutoScrollPosition;
+            g.TranslateTransform(scrollPoint.X, scrollPoint.Y);
+
+            //Zoom
+            mtx = g.Transform;
+            gc = g.BeginContainer();
+
+            g.SmoothingMode = document.SmoothingMode;
+            g.PixelOffsetMode = document.PixelOffsetMode;
+            g.CompositingQuality = document.CompositingQuality;
+
+            g.ScaleTransform(document.Zoom, document.Zoom);
+
+            Rectangle clipRectangle = Gsc2Goc(e.ClipRectangle);
+
+            document.DrawElements(g, clipRectangle);
+
+            if (!((resizeAction != null) && (resizeAction.IsResizing)))
+                document.DrawSelections(g, e.ClipRectangle);
+
+            if ((isMultiSelection) || (isAddSelection))
+                DrawSelectionRectangle(g);
+
+            if (isAddLink)
+            {
+                linkLine.CalcLink();
+                linkLine.Draw(g);
+            }
+            if ((resizeAction != null) && (!((moveAction != null) && (moveAction.IsMoving))))
+                resizeAction.DrawResizeCorner(g);
+
+            if (mousePointerElement != null)
+            {
+                if (mousePointerElement is IControllable)
+                {
+                    IController ctrl = ((IControllable)mousePointerElement).GetController();
+                    ctrl.DrawSelection(g);
+                }
+            }
+
+            g.EndContainer(gc);
+            g.Transform = mtx;
+
+            base.OnPaint(e);
+
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            base.OnPaintBackground(e);
+
+            Graphics g = e.Graphics;
+            GraphicsContainer gc;
+            Matrix mtx;
+            g.PageUnit = GraphicsUnit.Pixel;
+            mtx = g.Transform;
+            gc = g.BeginContainer();
+
+            Rectangle clipRectangle = Gsc2Goc(e.ClipRectangle);
+
+            document.DrawGrid(g, clipRectangle);
+
+            g.EndContainer(gc);
+            g.Transform = mtx;
+
+        }
+
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            //Delete element
+            if (e.KeyCode == Keys.Delete)
+            {
+                DeleteSelectedElements();
+                EndGeneralAction();
+                base.Invalidate();
+            }
+
+            //Undo
+            if (e.Control && e.KeyCode == Keys.Z)
+            {
+                if (undo.CanUndo)
+                    Undo();
+            }
+
+            //Copy
+            if ((e.Control) && (e.KeyCode == Keys.C))
+            {
+                this.Copy();
+            }
+
+            //Paste
+            if ((e.Control) && (e.KeyCode == Keys.V))
+            {
+                this.Paste();
+            }
+
+            //Cut
+            if ((e.Control) && (e.KeyCode == Keys.X))
+            {
+                this.Cut();
+            }
+
+            base.OnKeyDown(e);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            document.WindowSize = this.Size;
+        }
+
+        #region Mouse Events
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            Point mousePoint;
+
+            //ShowSelectionCorner((document.Action==DesignerAction.Select));
+
+            switch (document.Action)
+            {
+                // SELECT
+                case DesignerAction.Connect:
+                case DesignerAction.Select:
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+
+                        //Verify resize action
+                        StartResizeElement(mousePoint);
+                        if ((resizeAction != null) && (resizeAction.IsResizing)) break;
+
+                        //Verify label editing
+                        if (isEditLabel)
+                        {
+                            EndEditLabel();
+                        }
+
+                        // Search element by click
+                        selectedElement = document.FindElement(mousePoint);
+
+                        if (selectedElement != null)
+                        {
+                            //Events
+                            ElementMouseEventArgs eventMouseDownArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
+                            OnElementMouseDown(eventMouseDownArg);
+
+                            // Double-click to edit Label
+                            if ((e.Clicks == 2) && (selectedElement is ILabelElement))
+                            {
+                                selectedLabel = ((ILabelElement)selectedElement).Label;
+                                StartEditLabel();
+                                break;
+                            }
+
+                            // Element selected
+                            if (selectedElement is ConnectorElement)
+                            {
+                                StartAddLink((ConnectorElement)selectedElement, mousePoint);
+                                selectedElement = null;
+                            }
+                            else
+                                StartSelectElements(selectedElement, mousePoint);
+                        }
+                        else
+                        {
+                            // If click is on neutral area, clear selection
+                            document.ClearSelection();
+                            Point p = Gsc2Goc(new Point(e.X, e.Y)); ;
+                            isMultiSelection = true;
+                            selectionArea.Visible = true;
+                            selectionArea.Location = p;
+                            selectionArea.Size = new Size(0, 0);
+
+                            if (resizeAction != null)
+                                resizeAction.ShowResizeCorner(false);
+                        }
+                        base.Invalidate();
+                    }
+                    break;
+
+                // ADD
+                case DesignerAction.Add:
+
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                        StartAddElement(mousePoint);
+                    }
+                    break;
+
+                // DELETE
+                case DesignerAction.Delete:
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                        DeleteElement(mousePoint);
+                    }
+                    break;
+            }
+
+            base.OnMouseDown(e);
+
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.None)
+            {
+                this.Cursor = Cursors.Arrow;
+                Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+
+                if ((resizeAction != null)
+                    && ((document.Action == DesignerAction.Select)
+                        || ((document.Action == DesignerAction.Connect)
+                            && (resizeAction.IsResizingLink))))
+                {
+                    this.Cursor = resizeAction.UpdateResizeCornerCursor(mousePoint);
+                }
+
+                if (document.Action == DesignerAction.Connect)
+                {
+                    BaseElement mousePointerElementTMP = document.FindElement(mousePoint);
+                    if (mousePointerElement != mousePointerElementTMP)
+                    {
+                        if (mousePointerElementTMP is ConnectorElement)
+                        {
+                            mousePointerElement = mousePointerElementTMP;
+                            mousePointerElement.Invalidate();
+                            this.Invalidate(mousePointerElement, true);
+                        }
+                        else if (mousePointerElement != null)
+                        {
+                            mousePointerElement.Invalidate();
+                            this.Invalidate(mousePointerElement, true);
+                            mousePointerElement = null;
+                        }
+
+                    }
+                }
+                else
+                {
+                    this.Invalidate(mousePointerElement, true);
+                    mousePointerElement = null;
+                }
+            }
+
+            if (e.Button == MouseButtons.Left)
+            {
+                Point dragPoint = Gsc2Goc(new Point(e.X, e.Y));
+
+                if ((resizeAction != null) && (resizeAction.IsResizing))
+                {
+                    resizeAction.Resize(dragPoint);
+                    this.Invalidate();
+                }
+
+                if ((moveAction != null) && (moveAction.IsMoving))
+                {
+                    moveAction.Move(dragPoint);
+                    this.Invalidate();
+                }
+
+                if ((isMultiSelection) || (isAddSelection))
+                {
+                    Point p = Gsc2Goc(new Point(e.X, e.Y));
+                    selectionArea.Size = new Size(p.X - selectionArea.Location.X, p.Y - selectionArea.Location.Y);
+                    selectionArea.Invalidate();
+                    this.Invalidate(selectionArea, true);
+                }
+
+                if (isAddLink)
+                {
+                    selectedElement = document.FindElement(dragPoint);
+                    if ((selectedElement is ConnectorElement)
+                        && (document.CanAddLink(connStart, (ConnectorElement)selectedElement)))
+                        linkLine.Connector2 = (ConnectorElement)selectedElement;
+                    else
+                        linkLine.Connector2 = connEnd;
+
+                    IMoveController ctrl = (IMoveController)((IControllable)connEnd).GetController();
+                    ctrl.Move(dragPoint);
+
+                    //this.Invalidate(linkLine, true); //TODO
+                    base.Invalidate();
+                }
+            }
+
+            base.OnMouseMove(e);
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            Rectangle selectionRectangle = selectionArea.GetUnsignedRectangle();
+
+            if ((moveAction != null) && (moveAction.IsMoving))
+            {
+                ElementEventArgs eventClickArg = new ElementEventArgs(selectedElement);
+                OnElementClick(eventClickArg);
+
+                moveAction.End();
+                moveAction = null;
+
+                ElementMouseEventArgs eventMouseUpArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
+                OnElementMouseUp(eventMouseUpArg);
+
+                if (changed)
+                    AddUndo();
+            }
+
+            // Select
+            if (isMultiSelection)
+            {
+                EndSelectElements(selectionRectangle);
+            }
+            // Add element
+            else if (isAddSelection)
+            {
+                EndAddElement(selectionRectangle);
+            }
+
+            // Add link
+            else if (isAddLink)
+            {
+                Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                EndAddLink();
+
+                AddUndo();
+            }
+
+            // Resize
+            if (resizeAction != null)
+            {
+                if (resizeAction.IsResizing)
+                {
+                    Point mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                    resizeAction.End(mousePoint);
+
+                    AddUndo();
+                }
+                resizeAction.UpdateResizeCorner();
+            }
+
+            RestartInitValues();
+
+            base.Invalidate();
+
+            base.OnMouseUp(e);
+        }
+        #endregion
+
+        #endregion
+
+        #region Events Raising
+
+        // element handler
+        public delegate void ElementEventHandler(object sender, ElementEventArgs e);
+
+        #region Element Mouse Events
+
+        // CLICK
+        [Category("Element")]
+        public event ElementEventHandler ElementClick;
+
+        protected virtual void OnElementClick(ElementEventArgs e)
+        {
+            if (ElementClick != null)
+            {
+                ElementClick(this, e);
+            }
+        }
+
+        // mouse handler
+        public delegate void ElementMouseEventHandler(object sender, ElementMouseEventArgs e);
+
+        // MOUSE DOWN
+        [Category("Element")]
+        public event ElementMouseEventHandler ElementMouseDown;
+
+        protected virtual void OnElementMouseDown(ElementMouseEventArgs e)
+        {
+            if (ElementMouseDown != null)
+            {
+                ElementMouseDown(this, e);
+            }
+        }
+
+        // MOUSE UP
+        [Category("Element")]
+        public event ElementMouseEventHandler ElementMouseUp;
+
+        protected virtual void OnElementMouseUp(ElementMouseEventArgs e)
+        {
+            if (ElementMouseUp != null)
+            {
+                ElementMouseUp(this, e);
+            }
+        }
+
+        #endregion
+
+        #region Element Move Events
+        // Before Move
+        [Category("Element")]
+        public event ElementEventHandler ElementMoving;
+
+        protected virtual void OnElementMoving(ElementEventArgs e)
+        {
+            if (ElementMoving != null)
+            {
+                ElementMoving(this, e);
+            }
+        }
+
+        // After Move
+        [Category("Element")]
+        public event ElementEventHandler ElementMoved;
+
+        protected virtual void OnElementMoved(ElementEventArgs e)
+        {
+            if (ElementMoved != null)
+            {
+                ElementMoved(this, e);
+            }
+        }
+        #endregion
+
+        #region Element Resize Events
+        // Before Resize
+        [Category("Element")]
+        public event ElementEventHandler ElementResizing;
+
+        protected virtual void OnElementResizing(ElementEventArgs e)
+        {
+            if (ElementResizing != null)
+            {
+                ElementResizing(this, e);
+            }
+        }
+
+        // After Resize
+        [Category("Element")]
+        public event ElementEventHandler ElementResized;
+
+        protected virtual void OnElementResized(ElementEventArgs e)
+        {
+            if (ElementResized != null)
+            {
+                ElementResized(this, e);
+            }
+        }
+        #endregion
+
+        #region Element Connect Events
+        // connect handler
+        public delegate void ElementConnectEventHandler(object sender, ElementConnectEventArgs e);
+
+        // Before Connect
+        [Category("Element")]
+        public event ElementConnectEventHandler ElementConnecting;
+
+        protected virtual void OnElementConnecting(ElementConnectEventArgs e)
+        {
+            if (ElementConnecting != null)
+            {
+                ElementConnecting(this, e);
+            }
+        }
+
+        // After Connect
+        [Category("Element")]
+        public event ElementConnectEventHandler ElementConnected;
+
+        protected virtual void OnElementConnected(ElementConnectEventArgs e)
+        {
+            if (ElementConnected != null)
+            {
+                ElementConnected(this, e);
+            }
+        }
+        #endregion
+
+        #region Element Selection Events
+        // connect handler
+        public delegate void ElementSelectionEventHandler(object sender, ElementSelectionEventArgs e);
+
+        // Selection
+        [Category("Element")]
+        public event ElementSelectionEventHandler ElementSelection;
+
+        protected virtual void OnElementSelection(ElementSelectionEventArgs e)
+        {
+            if (ElementSelection != null)
+            {
+                ElementSelection(this, e);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Events Handling
+        private void document_PropertyChanged(object sender, EventArgs e)
+        {
+            if (!IsChanging())
+            {
+                base.Invalidate();
+            }
+        }
+
+        private void document_AppearancePropertyChanged(object sender, EventArgs e)
+        {
+            if (!IsChanging())
+            {
+                AddUndo();
+                base.Invalidate();
+            }
+        }
+
+        private void document_ElementPropertyChanged(object sender, EventArgs e)
+        {
+            changed = true;
+
+            if (!IsChanging())
+            {
+                AddUndo();
+                base.Invalidate();
+            }
+        }
+
+        private void document_ElementSelection(object sender, ElementSelectionEventArgs e)
+        {
+            OnElementSelection(e);
+        }
+        #endregion
+
+        #region Properties
+
+        public Document Document
+        {
+            get
+            {
+                return document;
+            }
+        }
+
+        public bool CanUndo
+        {
+            get
+            {
+                return undo.CanUndo;
+            }
+        }
+
+        public bool CanRedo
+        {
+            get
+            {
+                return undo.CanRedo;
+            }
+        }
+
+
+        private bool IsChanging()
+        {
+            return (
+                    ((moveAction != null) && (moveAction.IsMoving)) //isDragging
+                    || isAddLink || isMultiSelection ||
+                    ((resizeAction != null) && (resizeAction.IsResizing)) //isResizing
+                    );
+        }
+        #endregion
+
+        #region Draw Methods
+
+        /// <summary>
+        /// Graphic surface coordinates to graphic object coordinates.
+        /// </summary>
+        /// <param name="p">Graphic surface point.</param>
+        /// <returns></returns>
+        public Point Gsc2Goc(Point gsp)
+        {
+            float zoom = document.Zoom;
+            gsp.X = (int)((gsp.X - this.AutoScrollPosition.X) / zoom);
+            gsp.Y = (int)((gsp.Y - this.AutoScrollPosition.Y) / zoom);
+            return gsp;
+        }
+
+        public Rectangle Gsc2Goc(Rectangle gsr)
+        {
+            float zoom = document.Zoom;
+            gsr.X = (int)((gsr.X - this.AutoScrollPosition.X) / zoom);
+            gsr.Y = (int)((gsr.Y - this.AutoScrollPosition.Y) / zoom);
+            gsr.Width = (int)(gsr.Width / zoom);
+            gsr.Height = (int)(gsr.Height / zoom);
+            return gsr;
+        }
+
+        public Rectangle Goc2Gsc(Rectangle gsr)
+        {
+            float zoom = document.Zoom;
+            gsr.X = (int)((gsr.X + this.AutoScrollPosition.X) * zoom);
+            gsr.Y = (int)((gsr.Y + this.AutoScrollPosition.Y) * zoom);
+            gsr.Width = (int)(gsr.Width * zoom);
+            gsr.Height = (int)(gsr.Height * zoom);
+            return gsr;
+        }
+
+        internal void DrawSelectionRectangle(Graphics g)
+        {
+            selectionArea.Draw(g);
+        }
+        #endregion
+
+        #region Open/Save File
+        public void Save(string fileName)
+        {
+            IFormatter formatter = new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple };
+            Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            formatter.Serialize(stream, document);
+            stream.Close();
+        }
+
+        public void Open(string fileName)
+        {
+            IFormatter formatter = new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple };
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			document = (Document) formatter.Deserialize(stream);
 			stream.Close();
 			RecreateEventsHandlers();
 		}
-		#endregion
+        public void Save(System.IO.MemoryStream ms)
+        {
+            IFormatter formatter = new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple };
+            formatter.Serialize(ms, document);
+          
+        }
+        public void Open( System.IO.MemoryStream ms)
+        {
+            IFormatter formatter = new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple };
+            document = (Document)formatter.Deserialize(ms);
+            RecreateEventsHandlers();
+        }
+        public void    Save(out byte[]  buffer)
+        {
+            var ms = new System.IO.MemoryStream();
+            Save(ms);
+            buffer = ms.ToArray();
+        }
+        public void Open(byte[] buffer)
+        {
+            Open(new MemoryStream(buffer));
+        }
+        #endregion
 
-		#region Copy/Paste
-		public void Copy()
+        #region Copy/Paste
+        public void Copy()
 		{
 			if (document.SelectedElements.Count == 0) return;
 
@@ -1022,7 +1044,10 @@ namespace Dalssoft.DiagramNet
 				case ElementType.CommentBox:
 					el = new CommentBoxElement(selectionRectangle);
 					break;
-				default:
+                case ElementType.CommentBoxNode:
+                    el = new CommentBoxNode(selectionRectangle);
+                    break;
+                default:
 					el = new RectangleNode(selectionRectangle);
 					break;
 			}

@@ -6,23 +6,25 @@ using Dalssoft.DiagramNet;
 namespace Dalssoft.DiagramNet
 {
 	[Serializable]
-	public class CommentBoxElement: RectangleElement, IControllable, ILabelElement
+	public class CommentBoxNode : RectangleNode, IControllable, ILabelElement
 	{
-		[NonSerialized]
+        protected Color fillColor1 = Color.White;
+        protected Color fillColor2 = Color.DodgerBlue;
+        [NonSerialized]
 		private RectangleController controller;
 
 		protected Size foldSize = new Size(10, 15);
 
-		public CommentBoxElement(): this(0, 0, 100, 100)
+		public CommentBoxNode(): this(0, 0, 100, 100)
 		{}
 
-		public CommentBoxElement(Rectangle rec): this(rec.Location, rec.Size)
+		public CommentBoxNode(Rectangle rec): this(rec.Location, rec.Size)
 		{}
 
-		public CommentBoxElement(Point l, Size s): this(l.X, l.Y, s.Width, s.Height) 
+		public CommentBoxNode(Point l, Size s): this(l.X, l.Y, s.Width, s.Height) 
 		{}
 
-		public CommentBoxElement(int top, int left, int width, int height): base(top, left, width, height)
+		public CommentBoxNode(int top, int left, int width, int height): base(top, left, width, height)
 		{
 			fillColor1 = Color.LemonChiffon;
 			fillColor2 = Color.FromArgb(255, 255, 128);
@@ -54,15 +56,46 @@ namespace Dalssoft.DiagramNet
 				base.Size = value;
 			}
 		}
+        protected virtual Brush GetBrush(Rectangle r)
+        {
+            //Fill rectangle
+            Color fill1;
+            Color fill2;
+            Brush b;
+            if (opacity == 100)
+            {
+                fill1 = fillColor1;
+                fill2 = fillColor2;
+            }
+            else
+            {
+                fill1 = Color.FromArgb((int)(255.0f * (opacity / 100.0f)), fillColor1);
+                fill2 = Color.FromArgb((int)(255.0f * (opacity / 100.0f)), fillColor2);
+            }
 
-		internal override void Draw(Graphics g)
+            if (fillColor2 == Color.Empty)
+                b = new SolidBrush(fill1);
+            else
+            {
+                Rectangle rb = new Rectangle(r.X, r.Y, r.Width + 1, r.Height + 1);
+                b = new LinearGradientBrush(
+                    rb,
+                    fill1,
+                    fill2,
+                    LinearGradientMode.Horizontal);
+            }
+
+            return b;
+        }
+
+        internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
 
 			Rectangle r = BaseElement.GetUnsignedRectangle(new Rectangle(location, size));
-            if (Background != null)
+            if (base.Backgroup != null)
             {
-               g.DrawImage(Background, r.X, r.Y, r.Width, r.Height);
+               g.DrawImage(base.Backgroup, r.X, r.Y, r.Width, r.Height);
             }
             Point[] points = new Point[5];
 			points[0] = new Point(r.X + 0, r.Y + 0);

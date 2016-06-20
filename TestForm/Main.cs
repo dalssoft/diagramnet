@@ -97,6 +97,7 @@ namespace Dalssoft.TestForm
 		private Dalssoft.DiagramNet.Designer designer1;
 		private System.Windows.Forms.MenuItem TbCommentBox;
         private MenuItem menuSaveas;
+        private MenuItem TbCommentBoxNode;
         private System.ComponentModel.IContainer components;
 
 		public Form1()
@@ -134,7 +135,6 @@ namespace Dalssoft.TestForm
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.toolBar1 = new System.Windows.Forms.ToolBar();
             this.btnOpen = new System.Windows.Forms.ToolBarButton();
@@ -175,11 +175,12 @@ namespace Dalssoft.TestForm
             this.btnBack = new System.Windows.Forms.ToolBarButton();
             this.btnMoveUp = new System.Windows.Forms.ToolBarButton();
             this.btnMoveDown = new System.Windows.Forms.ToolBarButton();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.mainMenu1 = new System.Windows.Forms.MainMenu(this.components);
+            this.imageList1 = new System.Windows.Forms.ImageList();
+            this.mainMenu1 = new System.Windows.Forms.MainMenu();
             this.mnuFile = new System.Windows.Forms.MenuItem();
             this.mnuOpen = new System.Windows.Forms.MenuItem();
             this.mnuSave = new System.Windows.Forms.MenuItem();
+            this.menuSaveas = new System.Windows.Forms.MenuItem();
             this.menuItem26 = new System.Windows.Forms.MenuItem();
             this.mnuExit = new System.Windows.Forms.MenuItem();
             this.mnuEdit = new System.Windows.Forms.MenuItem();
@@ -216,7 +217,7 @@ namespace Dalssoft.TestForm
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.menuSaveas = new System.Windows.Forms.MenuItem();
+            this.TbCommentBoxNode = new System.Windows.Forms.MenuItem();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -334,7 +335,8 @@ namespace Dalssoft.TestForm
             this.mnuTbElipse,
             this.mnuTbRectangleNode,
             this.mnuTbElipseNode,
-            this.TbCommentBox});
+            this.TbCommentBox,
+            this.TbCommentBoxNode});
             // 
             // mnuTbRectangle
             // 
@@ -562,6 +564,12 @@ namespace Dalssoft.TestForm
             this.mnuSave.Index = 1;
             this.mnuSave.Text = "&Save";
             this.mnuSave.Click += new System.EventHandler(this.mnuSave_Click);
+            // 
+            // menuSaveas
+            // 
+            this.menuSaveas.Index = 2;
+            this.menuSaveas.Text = "Save &as ";
+            this.menuSaveas.Click += new System.EventHandler(this.menuSaveas_Click);
             // 
             // menuItem26
             // 
@@ -831,11 +839,11 @@ namespace Dalssoft.TestForm
             this.openFileDialog1.DefaultExt = "*.dgn";
             this.openFileDialog1.RestoreDirectory = true;
             // 
-            // menuSaveas
+            // TbCommentBoxNode
             // 
-            this.menuSaveas.Index = 2;
-            this.menuSaveas.Text = "Save &as ";
-            this.menuSaveas.Click += new System.EventHandler(this.menuSaveas_Click);
+            this.TbCommentBoxNode.Index = 5;
+            this.TbCommentBoxNode.Text = "Comment Box Node";
+            this.TbCommentBoxNode.Click += new System.EventHandler(this.TbCommentBoxNode_Click);
             // 
             // Form1
             // 
@@ -913,6 +921,8 @@ namespace Dalssoft.TestForm
 			mnuTbRectangleNode.Checked = false;
 			mnuElipseNode.Checked = false;
 			mnuTbElipseNode.Checked = false;
+
+            
 		}
 
 		private void Action_Size()
@@ -946,7 +956,8 @@ namespace Dalssoft.TestForm
 					mnuElipseNode.Checked = true;
 					mnuTbElipseNode.Checked = true;
 					break;
-			}
+
+            }
 			
 			if (changeDocumentProp)
 			{
@@ -1423,6 +1434,11 @@ namespace Dalssoft.TestForm
         private void menuSaveas_Click(object sender, EventArgs e)
         {
             File_SaveAs();
+        }
+
+        private void TbCommentBoxNode_Click(object sender, EventArgs e)
+        {
+            Action_Add(ElementType.CommentBoxNode);
         }
     }
 }

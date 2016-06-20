@@ -39,7 +39,9 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
-				base.Location = value;
+
+                label.Location = value;
+                base.Location = value;
 			}
 		}
 
@@ -134,14 +136,14 @@ namespace Dalssoft.DiagramNet
 			g.DrawRectangle(p, r);
 			p.Dispose();
 		}
-        Image __Backupgroup = null;
+        Image __Background = null;
         [DefaultValue(null)]
-        public Image Backupgroup
+        public Image Background
         {
-            get { return __Backupgroup; }
+            get { return __Background; }
             set
             {
-                __Backupgroup = value;
+                __Background = value;
                 OnAppearanceChanged(new EventArgs());
             }
         }
@@ -152,9 +154,9 @@ namespace Dalssoft.DiagramNet
 			Rectangle r = GetUnsignedRectangle();
             Brush b = GetBrush(r);			
 			g.FillRectangle(b, r);
-            if (Backupgroup != null)
+            if (Background != null)
             {
-                g.DrawImage(Backupgroup, r.X, r.Y,r.Width ,r.Height);
+                g.DrawImage(Background, r.X, r.Y,r.Width ,r.Height);
             }
             DrawBorder(g, r);
 			b.Dispose();

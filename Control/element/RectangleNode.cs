@@ -101,9 +101,11 @@ namespace Dalssoft.DiagramNet
 			}
 			set
 			{
+                label.Location = value;
 				rectangle.Location = value;
 				base.Location = value;
-			}
+                OnAppearanceChanged(new EventArgs());
+            }
 		}
 
 		public override Size Size
@@ -133,12 +135,12 @@ namespace Dalssoft.DiagramNet
 		}
         Image __Backupgroup = null;
         [DefaultValue(null)]
-        public Image Backupgroup
+        public Image Backgroup
         {
             get { return __Backupgroup; }
             set
             {
-                rectangle.Backupgroup = value;
+                rectangle.Background = value;
                 __Backupgroup = value;
               
             }
