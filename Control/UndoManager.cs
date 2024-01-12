@@ -1,8 +1,7 @@
+using Diagram.NET.binaryformatter;
 using System;
 using System.Collections;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Dalssoft.DiagramNet
 {
