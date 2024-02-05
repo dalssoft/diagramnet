@@ -1,5 +1,5 @@
 ﻿
-namespace Diagram.NET.binaryformatter
+namespace Diagram.NET.BinaryFormatter
 {
     public interface IFormatter
     {
