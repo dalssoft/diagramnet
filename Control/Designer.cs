@@ -5,9 +5,8 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text;
 using System.Xml;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.ComponentModel;
+using Diagram.NET.binaryformatter;
 
 namespace Dalssoft.DiagramNet
 {

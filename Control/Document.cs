@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+using ProtoBuf;
 
 namespace Dalssoft.DiagramNet
 {
@@ -11,6 +12,7 @@ namespace Dalssoft.DiagramNet
 	/// This class control the elements collection and visualization.
 	/// </summary>
 	[Serializable]
+	[ProtoContract]
 	public class Document: IDeserializationCallback 
 	{
 		//Draw properties

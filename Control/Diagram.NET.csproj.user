@@ -41,4 +41,9 @@
     <StartWorkingDirectory />
     <StartWithIE>true</StartWithIE>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="Designer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
